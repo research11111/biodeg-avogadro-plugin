@@ -8,9 +8,9 @@ def getOptions():
 
     return {
         'userOptions': {
-            'label': {
+            'Press OK to compute the biodegradability index': {
                 'type': 'string',
-                'default': 'Compute biodegradability index'
+                'default': '(unsued)'
             }
         },
         'inputMoleculeFormat': 'cjson'
