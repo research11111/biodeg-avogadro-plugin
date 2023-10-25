@@ -42,7 +42,7 @@ def jsonStrToMol(cjson_data):
 
 class RunResultGui():
     def __init__(self,biodeg):
-        self.app = QApplication([])
+        app = QApplication([])
 
         dialog = QDialog()
         dialog.setWindowTitle("Biodegradability")
@@ -51,9 +51,16 @@ class RunResultGui():
         label = QLabel("This molecule is %s\n" % (biodeg))
         layout.addWidget(label)
 
-        input_button = QPushButton("Export")
-        input_button.clicked.connect(self.export_molecules_from_current_data)
-        layout.addWidget(input_button)
+        error_output = QLabel("")
+        layout.addWidget(error_output)
+
+        export_button = QPushButton("Export")
+        export_button.clicked.connect(self.export_molecules_from_current_data)
+        layout.addWidget(export_button)
+
+        self.app = app
+        self.export_button = export_button
+        self.error_output = error_output
 
         dialog.setLayout(layout)
         dialog.show()
@@ -63,7 +70,13 @@ class RunResultGui():
         fileLocation = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation),"export.csv")
         file_name, _ = QFileDialog.getSaveFileName(None, "Save File", fileLocation, "File (*.csv);;All Files (*)", options=QFileDialog.Option.DontUseNativeDialog)
         if file_name:
-            data['classifier'].guess_result_to_csv(file_name,data['result'])
+            try:
+                data['classifier'].guess_result_to_csv(file_name,data['result'])
+                self.error_output.setText("Result writted to " + file_name)
+            except OSError as e:
+                self.error_output.setText("Error %s" % (str(e)))
+        else:
+            self.error_output.setText("No filename provided")
 
 def run_command():
     stdinStr = sys.stdin.read()
