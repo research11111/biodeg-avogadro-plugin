@@ -1,8 +1,15 @@
 import argparse
 import json
-import sys
+import sys, os
 from rdkit import Chem
 from biodeg import BioDegClassifier
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QApplication, QPushButton, QFileDialog
+from PyQt5.QtCore import QStandardPaths
+
+data = {
+    'classifier': None,
+    'result': None
+}
 
 def getOptions():
 
@@ -32,6 +39,32 @@ def jsonStrToMol(cjson_data):
 
     return mol.GetMol()
 
+
+class RunResultGui():
+    def __init__(self,biodeg):
+        self.app = QApplication([])
+
+        dialog = QDialog()
+        dialog.setWindowTitle("Biodegradability")
+
+        layout = QVBoxLayout()
+        label = QLabel("This molecule is %s\n" % (biodeg))
+        layout.addWidget(label)
+
+        input_button = QPushButton("Export")
+        input_button.clicked.connect(self.export_molecules_from_current_data)
+        layout.addWidget(input_button)
+
+        dialog.setLayout(layout)
+        dialog.show()
+        self.app.exec_()
+
+    def export_molecules_from_current_data(self):
+        fileLocation = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation),"export.csv")
+        file_name, _ = QFileDialog.getSaveFileName(None, "Save File", fileLocation, "File (*.csv);;All Files (*)", options=QFileDialog.Option.DontUseNativeDialog)
+        if file_name:
+            data['classifier'].guess_result_to_csv(file_name,data['result'])
+
 def run_command():
     stdinStr = sys.stdin.read()
 
@@ -44,29 +77,16 @@ def run_command():
     mol = Chem.MolFromSmiles(smiles)
 
     c = BioDegClassifier.Prod()
+    data['classifier'] = c
     c.load()
     c.loadMols(mol) 
     result = c.guess()
     if 1 == len(result):
+        data['result'] = result
         key = next(iter(result.keys()))
         biodeg = c.biodeg_string_from_state(result[key])
         smiles = Chem.MolToSmiles(key,allHsExplicit=False)
-        
-        from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QApplication
-
-        app = QApplication([])
-
-        dialog = QDialog()
-        dialog.setWindowTitle("Biodegradability")
-
-        layout = QVBoxLayout()
-        label = QLabel("This molecule is %s\n" % (biodeg))
-        layout.addWidget(label)
-
-        dialog.setLayout(layout)
-        dialog.show()
-
-        app.exec_()
+        RunResultGui(biodeg)
 
     else:
         # issue during processing
