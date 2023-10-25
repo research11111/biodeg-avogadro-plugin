@@ -51,8 +51,23 @@ def run_command():
         key = next(iter(result.keys()))
         biodeg = c.biodeg_string_from_state(result[key])
         smiles = Chem.MolToSmiles(key,allHsExplicit=False)
-        sys.stderr.write("smiles = %s %d\n" % (smiles,result[key]))
-        sys.stderr.write("The molecule is %s\n" % (biodeg))
+        
+        from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QApplication
+
+        app = QApplication([])
+
+        dialog = QDialog()
+        dialog.setWindowTitle("Biodegradability")
+
+        layout = QVBoxLayout()
+        label = QLabel("This molecule is %s\n" % (biodeg))
+        layout.addWidget(label)
+
+        dialog.setLayout(layout)
+        dialog.show()
+
+        app.exec_()
+
     else:
         # issue during processing
         pass
