@@ -1,0 +1,12 @@
+{
+  "author": "Research11111",
+  "version": 1.0,
+  "url": "https://github.com/research11111/biodeg-avogadro-plugin",
+  "name": "biodeg",
+  "description": "Compute a biodegradability index on displayed molecule",
+  "type": "commands",
+  "commands": [
+    { "name": "BioDeg", "command": "compute_biodegradability" }
+  ]
+  
+}
