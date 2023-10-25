@@ -37,13 +37,21 @@ def run_command():
 
     opts = json.loads(stdinStr)
     mol = jsonStrToMol(opts['cjson'])
+    
+    # This is a quick fix because the model has not been trained with enough data, any added information
+    # make the compute false
+    smiles = Chem.MolToSmiles(mol,allHsExplicit=False)
+    mol = Chem.MolFromSmiles(smiles)
+
     c = BioDegClassifier.Prod()
-    c.loadMols(mol)
+    c.load()
+    c.loadMols(mol) 
     result = c.guess()
     if 1 == len(result):
         key = next(iter(result.keys()))
         biodeg = c.biodeg_string_from_state(result[key])
         smiles = Chem.MolToSmiles(key,allHsExplicit=False)
+        sys.stderr.write("smiles = %s %d\n" % (smiles,result[key]))
         sys.stderr.write("The molecule is %s\n" % (biodeg))
     else:
         # issue during processing
@@ -65,7 +73,7 @@ if __name__ == "__main__":
     if args['display_name']:
         print("BioDegradability")
     if args['menu_path']:
-        print("Build")
+        print("Analytique")
     if args['print_options']:
         print(json.dumps(getOptions()))
     if args['run_command']:
