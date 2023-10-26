@@ -14,12 +14,6 @@ data = {
 def getOptions():
 
     return {
-        'userOptions': {
-            'Press OK to compute the biodegradability index': {
-                'type': 'string',
-                'default': '(unsued)'
-            }
-        },
         'inputMoleculeFormat': 'cjson'
     }
 
@@ -94,16 +88,24 @@ def run_command():
     c.load()
     c.loadMols(mol) 
     result = c.guess()
+    result_dict = {}
     if 1 == len(result):
         data['result'] = result
         key = next(iter(result.keys()))
         biodeg = c.biodeg_string_from_state(result[key])
         smiles = Chem.MolToSmiles(key,allHsExplicit=False)
-        RunResultGui(biodeg)
+        result_dict['cjson'] = {
+            "properties": { "biodegradability": "{biodeg}" }
+        }
+        #RunResultGui(biodeg)
 
     else:
         # issue during processing
+        result_dict['cjson'] = {
+            "properties": { "biodegradability": "Error during computation" }
+        }
         pass
+    return result_dict
     
 
 if __name__ == "__main__":
