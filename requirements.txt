@@ -1,1 +1,3 @@
 rdkit
+git+https://github.com/research11111/biodeg.git#egg=biodeg
+PyQt5
